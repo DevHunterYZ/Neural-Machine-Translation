@@ -113,5 +113,40 @@ decoder_states = [decoder_h , decoder_c]
 decoder_out = decoder_dense(decoder_out)
 
 decoder_model_inf = Model(inputs=[decoder_input] + decoder_input_states,
-                          outputs=[decoder_out] + decoder_states )          
+                          outputs=[decoder_out] + decoder_states )    
+def decode_seq(inp_seq):
+    
+    # Initial states value is coming from the encoder 
+    states_val = encoder_model_inf.predict(inp_seq)
+    
+    target_seq = np.zeros((1, 1, len(fra_chars)))
+    target_seq[0, 0, fra_char_to_index_dict['\t']] = 1
+    
+    translated_sent = ''
+    stop_condition = False
+    
+    while not stop_condition:
+        
+        decoder_out, decoder_h, decoder_c = decoder_model_inf.predict(x=[target_seq] + states_val)
+        
+        max_val_index = np.argmax(decoder_out[0,-1,:])
+        sampled_fra_char = fra_index_to_char_dict[max_val_index]
+        translated_sent += sampled_fra_char
+        
+        if ( (sampled_fra_char == '\n') or (len(translated_sent) > max_len_fra_sent)) :
+            stop_condition = True
+        
+        target_seq = np.zeros((1, 1, len(fra_chars)))
+        target_seq[0, 0, max_val_index] = 1
+        
+        states_val = [decoder_h, decoder_c]
+        
+    return translated_sent
+
+for seq_index in range(10):
+    inp_seq = tokenized_eng_sentences[seq_index:seq_index+1]
+    translated_sent = decode_seq(inp_seq)
+    print('-')
+    print('Input sentence:', eng_sent[seq_index])
+    print('Decoded sentence:', translated_sent)
           
