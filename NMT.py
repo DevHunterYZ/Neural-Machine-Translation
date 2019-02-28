@@ -10,12 +10,12 @@ eng_chars = set()
 fra_chars = set()
 nb_samples = 10000
 
-# Process english and french sentences
+# İngilizce ve Fransızca cümleleri işle.
 for line in range(nb_samples):
     
     eng_line = str(lines[line]).split('\t')[0]
     
-    # Append '\t' for start of the sentence and '\n' to signify end of the sentence
+    # Cümlenin başlangıcı için '\ t' ve cümlenin sonunu belirtmek için '\ n' ekleyin
     fra_line = '\t' + str(lines[line]).split('\t')[1] + '\n'
     eng_sent.append(eng_line)
     fra_sent.append(fra_line)
@@ -31,20 +31,20 @@ for line in range(nb_samples):
 fra_chars = sorted(list(fra_chars))
 eng_chars = sorted(list(eng_chars))
 
-# dictionary to index each english character - key is index and value is english character
+# Her ingilizce karakteri indekslemek için sözlük - anahtar indeksi ve değeri ingilizce karakter
 eng_index_to_char_dict = {}
 
-# dictionary to get english character given its index - key is english character and value is index
+# İndeksi verilen ingilizce karakter almak için sözlük - anahtar ingilizce karakter ve değer endeksi
 eng_char_to_index_dict = {}
 
 for k, v in enumerate(eng_chars):
     eng_index_to_char_dict[k] = v
     eng_char_to_index_dict[v] = k
     
-# dictionary to index each french character - key is index and value is french character
+# Her fransız karakterini endekslemek için sözlük - anahtar dizin ve değer fransız karakter
 fra_index_to_char_dict = {}
 
-# dictionary to get french character given its index - key is french character and value is index
+# Dizini verilen Fransız karakter almak için sözlük - anahtar Fransız karakter ve değer dizin
 fra_char_to_index_dict = {}
 for k, v in enumerate(fra_chars):
     fra_index_to_char_dict[k] = v
@@ -58,7 +58,7 @@ tokenized_eng_sentences = np.zeros(shape = (nb_samples,max_len_eng_sent,len(eng_
 tokenized_fra_sentences = np.zeros(shape = (nb_samples,max_len_fra_sent,len(fra_chars)), dtype='float32')
 target_data = np.zeros((nb_samples, max_len_fra_sent, len(fra_chars)),dtype='float32')
 
-# Vectorize the english and french sentences
+# İngilizce ve fransızca cümleleri vektör haline getirelim.
 
 for i in range(nb_samples):
     for k,ch in enumerate(eng_sent[i]):
@@ -71,14 +71,14 @@ for i in range(nb_samples):
         if k > 0:
             target_data[i,k-1,fra_char_to_index_dict[ch]] = 1
 
-# Encoder model
+# Encoder modeli
 
 encoder_input = Input(shape=(None,len(eng_chars)))
 encoder_LSTM = LSTM(256,return_state = True)
 encoder_outputs, encoder_h, encoder_c = encoder_LSTM (encoder_input)
 encoder_states = [encoder_h, encoder_c]
 
-# Decoder model
+# Decoder modeli
 
 decoder_input = Input(shape=(None,len(fra_chars)))
 decoder_LSTM = LSTM(256,return_sequences=True, return_state = True)
@@ -88,19 +88,19 @@ decoder_out = decoder_dense (decoder_out)
 
 model = Model(inputs=[encoder_input, decoder_input],outputs=[decoder_out])
 
-# Run training
+# Train edelim.
 model.compile(optimizer='rmsprop', loss='categorical_crossentropy')
 model.fit(x=[tokenized_eng_sentences,tokenized_fra_sentences], 
           y=target_data,
           batch_size=64,
           epochs=50,
           validation_split=0.2)
-# Inference models for testing
+# Test için Çıkarım(Inference) modelleri
 
-# Encoder inference model
+# Encoder Çıkarım modeli
 encoder_model_inf = Model(encoder_input, encoder_states)
 
-# Decoder inference model
+# Decoder Çıkarım modeli
 decoder_state_input_h = Input(shape=(256,))
 decoder_state_input_c = Input(shape=(256,))
 decoder_input_states = [decoder_state_input_h, decoder_state_input_c]
@@ -116,7 +116,7 @@ decoder_model_inf = Model(inputs=[decoder_input] + decoder_input_states,
                           outputs=[decoder_out] + decoder_states )    
 def decode_seq(inp_seq):
     
-    # Initial states value is coming from the encoder 
+    # İlk durumlar(states) değeri kodlayıcıdan geliyor.
     states_val = encoder_model_inf.predict(inp_seq)
     
     target_seq = np.zeros((1, 1, len(fra_chars)))
@@ -147,7 +147,7 @@ for seq_index in range(10):
     inp_seq = tokenized_eng_sentences[seq_index:seq_index+1]
     translated_sent = decode_seq(inp_seq)
     print('-')
-    print('Input sentence:', eng_sent[seq_index])
-    print('Decoded sentence:', translated_sent)
+    print('Girdi(Input) cümlesi:', eng_sent[seq_index])
+    print('Deşifrelenmiş(Decoded) cümle:', translated_sent)
           
 print(fra_sent)
