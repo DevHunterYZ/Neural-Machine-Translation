@@ -50,8 +50,8 @@ for k, v in enumerate(fra_chars):
     fra_index_to_char_dict[k] = v
     fra_char_to_index_dict[v] = k
 
-max_len_eng_sent = max([len(line) for line in eng_sentences])
-max_len_fra_sent = max([len(line) for line in fra_sentences])
+max_len_eng_sent = max([len(line) for line in eng_sent])
+max_len_fra_sent = max([len(line) for line in fra_sent])
 
 
 tokenized_eng_sentences = np.zeros(shape = (nb_samples,max_len_eng_sent,len(eng_chars)), dtype='float32')
