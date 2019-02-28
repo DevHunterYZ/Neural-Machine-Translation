@@ -150,3 +150,4 @@ for seq_index in range(10):
     print('Input sentence:', eng_sent[seq_index])
     print('Decoded sentence:', translated_sent)
           
+print(fra_sent)
